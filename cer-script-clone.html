@@ -20,13 +20,25 @@
       log("Button clicked");
 
       const paramsIn = new URLSearchParams(window.location.search);
-      const issueKey = paramsIn.get("issueKey");
+
+      let issueKey = paramsIn.get("issueKey");
 
       if (!issueKey || issueKey.includes("{")) {
-        log("ERROR: issueKey was not passed into the fragment URL");
-        log("Current URL: " + window.location.href);
-        return;
+        const contextRaw = paramsIn.get("context");
+
+        if (contextRaw) {
+          const context = JSON.parse(contextRaw);
+          issueKey = context.issueKey;
+        }
       }
+
+      if (!issueKey) {
+          log("ERROR: Could not determine issue key");
+          log("Current URL: " + window.location.href);
+          return;
+      }
+
+      log("Issue key: " + issueKey);
 
       const jiraBaseUrl = "https://cerillion.atlassian.net";
       const targetProjectId = "10447";
