@@ -22,27 +22,27 @@
     function getIssueKey() {
       const params = new URLSearchParams(window.location.search);
 
+      const contextRaw = params.get("context");
+      if (contextRaw) {
+        try {
+          const context = JSON.parse(contextRaw);
+          if (context.issueKey) {
+            return context.issueKey;
+          }
+        } catch (e) {
+          log("Could not parse context: " + e.message);
+        }
+      }
+
       const directIssueKey = params.get("issueKey");
       if (directIssueKey && !directIssueKey.includes("{")) {
         return directIssueKey;
       }
 
-      const contextRaw = params.get("context");
-      if (!contextRaw) {
-        return null;
-      }
-
-      try {
-        const context = JSON.parse(contextRaw);
-        return context.issueKey || null;
-      } catch (e) {
-        log("ERROR: Could not parse context JSON");
-        log(e.message);
-        return null;
-      }
+      return null;
     }
 
-    log("Page loaded");
+    log("Page loaded - version 2");
 
     document.getElementById("cloneBtn").addEventListener("click", function () {
       log("Button clicked");
@@ -57,7 +57,7 @@
 
       log("Issue key: " + issueKey);
 
-      const params = new URLSearchParams({
+      const createParams = new URLSearchParams({
         pid: targetProjectId,
         issuetype: targetIssueTypeId,
         summary: "Clone of " + issueKey,
@@ -65,7 +65,7 @@
       });
 
       const createUrl =
-        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + params.toString();
+        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + createParams.toString();
 
       log("Opening: " + createUrl);
 
