@@ -45,12 +45,18 @@
         return;
       }
 
+      //const createParams = new URLSearchParams({
+      //  pid: targetProjectId,
+      //  issuetype: targetIssueTypeId,
+      //  summary: "Clone of " + issueKey,
+      //  description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
+      //});
+
       const createParams = new URLSearchParams({
         pid: targetProjectId,
-        issuetype: targetIssueTypeId,
-        summary: "Clone of " + issueKey,
-        description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
+        issuetype: targetIssueTypeId
       });
+      
 
       const createUrl =
         jiraBaseUrl +
