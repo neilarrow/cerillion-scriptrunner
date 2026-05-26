@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+</head>
+<body>
+  <button id="cloneBtn">Custom Clone</button>
+  <pre id="debug"></pre>
+
+  <script>
+    const debug = document.getElementById("debug");
+
+    function log(msg) {
+      debug.textContent += msg + "\n";
+    }
+
+    log("Page loaded");
+
+    document.getElementById("cloneBtn").addEventListener("click", function () {
+      log("Button clicked");
+
+      if (!window.AP) {
+        log("ERROR: window.AP is not available");
+        return;
+      }
+
+      AP.context.getContext(function (context) {
+        log("Context: " + JSON.stringify(context, null, 2));
+
+        const issueKey =
+          context.issue_key ||
+          context.extension?.issue?.key ||
+          context.jira?.issue?.key;
+
+        if (!issueKey) {
+          log("ERROR: Could not find issue key");
+          return;
+        }
+
+        const jiraBaseUrl = "https://cerillion.atlassian.net";
+        const targetProjectId = "10447";
+        const targetIssueTypeId = "10370";
+
+        const params = new URLSearchParams({
+          pid: targetProjectId,
+          issuetype: targetIssueTypeId,
+          summary: "Clone of " + issueKey,
+          description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
+        });
+
+        const url =
+          jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + params.toString();
+
+        log("Opening: " + url);
+
+        window.open(url, "_blank");
+      });
+    });
+  </script>
+</body>
+</html>
