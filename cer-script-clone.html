@@ -8,113 +8,36 @@
   <button id="cloneBtn">Custom Clone</button>
   <pre id="debug"></pre>
 
-<script>
-  const jiraBaseUrl = "https://cerillion.atlassian.net";
-  const targetProjectId = "10447";
-  const targetIssueTypeId = "10370";
+  <script>
+    const jiraBaseUrl = "https://cerillion.atlassian.net";
+    const targetProjectId = "10447";
+    const targetIssueTypeId = "10370";
 
-  const debug = document.getElementById("debug");
+    const debug = document.getElementById("debug");
 
-  function log(message) {
-    debug.textContent += message + "\n";
-  }
-
-  function getIssueKey() {
-    const params = new URLSearchParams(window.location.search);
-    const contextRaw = params.get("context");
-
-    if (contextRaw) {
-      const context = JSON.parse(contextRaw);
-      return context.issueKey;
+    function log(message) {
+      debug.textContent += message + "\n";
     }
 
-    return null;
-  }
+    log("Page loaded - simple Behaviour version");
 
-  async function getSourceIssue(issueKey) {
-    const response = await fetch(
-      jiraBaseUrl + "/rest/api/3/issue/" + issueKey +
-      "?fields=summary,description,priority,labels,components",
-      {
-        credentials: "include",
-        headers: {
-          "Accept": "application/json"
-        }
-      }
-    );
+    document.getElementById("cloneBtn").addEventListener("click", function () {
+      log("Button clicked");
 
-    if (!response.ok) {
-      throw new Error("Could not fetch source issue: " + response.status);
-    }
-
-    return await response.json();
-  }
-
-  function adfToPlainText(adf) {
-    if (!adf) return "";
-
-    let text = "";
-
-    function walk(node) {
-      if (!node) return;
-
-      if (node.type === "text") {
-        text += node.text;
-      }
-
-      if (node.type === "paragraph") {
-        text += "\n";
-      }
-
-      if (node.content) {
-        node.content.forEach(walk);
-      }
-    }
-
-    walk(adf);
-    return text.trim();
-  }
-
-  document.getElementById("cloneBtn").addEventListener("click", async function () {
-    log("Button clicked");
-
-    const issueKey = getIssueKey();
-
-    if (!issueKey) {
-      log("ERROR: Could not determine issue key");
-      return;
-    }
-
-    log("Source issue: " + issueKey);
-
-    try {
-      const sourceIssue = await getSourceIssue(issueKey);
-      const fields = sourceIssue.fields;
       const createParams = new URLSearchParams({
-        pid: "10447",
-        issuetype: "10370"
+        pid: targetProjectId,
+        issuetype: targetIssueTypeId
       });
 
-      if (fields.priority?.id) {
-        createParams.set("priority", fields.priority.id);
-      }
-
-      if (fields.components?.length) {
-        createParams.set(
-          "components",
-          fields.components.map(c => c.id).join(",")
-        );
-      }
-
       const createUrl =
-        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" +
+        jiraBaseUrl +
+        "/secure/CreateIssueDetails!init.jspa?" +
         createParams.toString();
 
-      log("Opening Create Issue");
-      window.top.location.href = createUrl;
+      log("Opening: " + createUrl);
 
-    } catch (e) {
-      log("ERROR: " + e.message);
-    }
-  });
-</script>
+      window.top.location.href = createUrl;
+    });
+  </script>
+</body>
+</html>
