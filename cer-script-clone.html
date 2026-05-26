@@ -19,27 +19,122 @@
       debug.textContent += message + "\n";
     }
 
-    log("Loaded v7-working");
+    function getIssueKey() {
+      const params = new URLSearchParams(window.location.search);
 
-    document.getElementById("cloneBtn").addEventListener("click", function () {
+      const contextRaw = params.get("context");
+
+      if (!contextRaw) {
+        return null;
+      }
+
+      try {
+        const context = JSON.parse(contextRaw);
+        return context.issueKey || null;
+      } catch (e) {
+        log("Context parse error: " + e.message);
+        return null;
+      }
+    }
+
+    async function getIssue(issueKey) {
+      const response = await fetch(
+        jiraBaseUrl +
+        "/rest/api/3/issue/" +
+        issueKey +
+        "?fields=summary,description",
+        {
+          credentials: "include",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("REST call failed: " + response.status);
+      }
+
+      return await response.json();
+    }
+
+    function adfToText(adf) {
+      if (!adf || !adf.content) {
+        return "";
+      }
+
+      let text = "";
+
+      function walk(node) {
+        if (node.type === "text") {
+          text += node.text;
+        }
+
+        if (node.type === "paragraph") {
+          text += "\n";
+        }
+
+        if (node.content) {
+          node.content.forEach(walk);
+        }
+      }
+
+      adf.content.forEach(walk);
+
+      return text.trim();
+    }
+
+    log("Loaded v8-dynamic-clone");
+
+    document.getElementById("cloneBtn").addEventListener("click", async function () {
+
       log("Button clicked");
 
-      const createParams = new URLSearchParams({
-        pid: targetProjectId,
-        issuetype: targetIssueTypeId,
-        summary: "Test cloned summary",
-        description: "Test cloned description"
-      });
+      try {
 
-      const createUrl =
-        jiraBaseUrl +
-        "/secure/CreateIssueDetails!init.jspa?" +
-        createParams.toString();
+        const issueKey = getIssueKey();
 
-      log("Opening URL:");
-      log(createUrl);
+        if (!issueKey) {
+          throw new Error("Could not determine source issue key");
+        }
 
-      window.top.location.href = createUrl;
+        log("Source issue: " + issueKey);
+
+        const issue = await getIssue(issueKey);
+
+        const summary = issue.fields.summary || "";
+
+        const description =
+          "Cloned from " +
+          jiraBaseUrl +
+          "/browse/" +
+          issueKey +
+          "\n\n" +
+          adfToText(issue.fields.description);
+
+        const createParams = new URLSearchParams({
+          pid: targetProjectId,
+          issuetype: targetIssueTypeId,
+          summary: summary,
+          description: description
+        });
+
+        const createUrl =
+          jiraBaseUrl +
+          "/secure/CreateIssueDetails!init.jspa?" +
+          createParams.toString();
+
+        log("Opening URL:");
+        log(createUrl);
+
+        window.top.location.href = createUrl;
+
+      } catch (e) {
+
+        log("ERROR:");
+        log(e.message);
+
+      }
     });
   </script>
 </body>
