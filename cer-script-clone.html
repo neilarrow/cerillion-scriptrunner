@@ -2,16 +2,44 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <title>Custom Clone</title>
 </head>
 <body>
   <button id="cloneBtn">Custom Clone</button>
   <pre id="debug"></pre>
 
   <script>
+    const jiraBaseUrl = "https://cerillion.atlassian.net";
+    const targetProjectId = "10447";
+    const targetIssueTypeId = "10370";
+
     const debug = document.getElementById("debug");
 
     function log(message) {
       debug.textContent += message + "\n";
+    }
+
+    function getIssueKey() {
+      const params = new URLSearchParams(window.location.search);
+
+      const directIssueKey = params.get("issueKey");
+      if (directIssueKey && !directIssueKey.includes("{")) {
+        return directIssueKey;
+      }
+
+      const contextRaw = params.get("context");
+      if (!contextRaw) {
+        return null;
+      }
+
+      try {
+        const context = JSON.parse(contextRaw);
+        return context.issueKey || null;
+      } catch (e) {
+        log("ERROR: Could not parse context JSON");
+        log(e.message);
+        return null;
+      }
     }
 
     log("Page loaded");
@@ -19,32 +47,17 @@
     document.getElementById("cloneBtn").addEventListener("click", function () {
       log("Button clicked");
 
-      const paramsIn = new URLSearchParams(window.location.search);
-
-      let issueKey = paramsIn.get("issueKey");
-
-      if (!issueKey || issueKey.includes("{")) {
-        const contextRaw = paramsIn.get("context");
-
-        if (contextRaw) {
-          const context = JSON.parse(contextRaw);
-          issueKey = context.issueKey;
-        }
-      }
+      const issueKey = getIssueKey();
 
       if (!issueKey) {
-          log("ERROR: Could not determine issue key");
-          log("Current URL: " + window.location.href);
-          return;
+        log("ERROR: Could not determine issue key");
+        log("Current URL: " + window.location.href);
+        return;
       }
 
       log("Issue key: " + issueKey);
 
-      const jiraBaseUrl = "https://cerillion.atlassian.net";
-      const targetProjectId = "10447";
-      const targetIssueTypeId = "10370";
-      
-      const paramsOut = new URLSearchParams({
+      const params = new URLSearchParams({
         pid: targetProjectId,
         issuetype: targetIssueTypeId,
         summary: "Clone of " + issueKey,
@@ -52,7 +65,7 @@
       });
 
       const createUrl =
-        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + paramsOut.toString();
+        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + params.toString();
 
       log("Opening: " + createUrl);
 
