@@ -90,22 +90,9 @@
     try {
       const sourceIssue = await getSourceIssue(issueKey);
       const fields = sourceIssue.fields;
-
       const createParams = new URLSearchParams({
-        pid: targetProjectId,
-        issuetype: targetIssueTypeId,
-
-        summary: "Clone of " + issueKey + ": " + fields.summary,
-
-        description:
-          "Cloned from " + jiraBaseUrl + "/browse/" + issueKey +
-          "\n\n" +
-          adfToPlainText(fields.description || ""),
-
-        labels: (fields.labels || []).join(",")
-
-        // Example text custom field:
-        // customfield_12345: fields.customfield_12345 || ""
+        pid: "10447",
+        issuetype: "10370"
       });
 
       if (fields.priority?.id) {
