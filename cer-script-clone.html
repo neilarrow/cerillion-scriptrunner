@@ -11,7 +11,6 @@
   <script>
     const jiraBaseUrl = "https://cerillion.atlassian.net";
     const targetProjectId = "10447";
-    const targetIssueTypeId = "10370";
 
     const debug = document.getElementById("debug");
 
@@ -19,14 +18,15 @@
       debug.textContent += message + "\n";
     }
 
-    log("Page loaded - simple Behaviour version");
+    log("Page loaded - URL prefill test");
 
     document.getElementById("cloneBtn").addEventListener("click", function () {
       log("Button clicked");
 
       const createParams = new URLSearchParams({
         pid: targetProjectId,
-        issuetype: targetIssueTypeId
+        summary: "Test cloned summary",
+        description: "Test cloned description"
       });
 
       const createUrl =
