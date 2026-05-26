@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+</head>
+<body>
+  <button id="cloneBtn">Custom Clone</button>
+
+  <script>
+    const jiraBaseUrl = "https://cerillion.atlassian.net";
+    const targetProjectId = "10001";
+    const targetIssueTypeId = "10005";
+
+    document.getElementById("cloneBtn").addEventListener("click", function () {
+      AP.context.getContext(function (context) {
+        const issueKey =
+          context?.jira?.issue?.key ||
+          context?.issue_key ||
+          new URLSearchParams(window.location.search).get("issue.key");
+
+        if (!issueKey) {
+          alert("Could not determine source issue key.");
+          return;
+        }
+
+        const params = new URLSearchParams({
+          pid: targetProjectId,
+          issuetype: targetIssueTypeId,
+          summary: "Clone of " + issueKey,
+          description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
+        });
+
+        window.open(
+          jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + params.toString(),
+          "_blank"
+        );
+      });
+    });
+  </script>
+</body>
+</html>
