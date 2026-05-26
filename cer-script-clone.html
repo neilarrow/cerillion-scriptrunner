@@ -41,4 +41,47 @@
     });
   </script>
 </body>
+</html><!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Custom Clone</title>
+</head>
+<body>
+  <button id="cloneBtn">Custom Clone</button>
+  <pre id="debug"></pre>
+
+  <script>
+    const VERSION = "v6-no-issuetype";
+    const jiraBaseUrl = "https://cerillion.atlassian.net";
+    const targetProjectId = "10447";
+
+    const debug = document.getElementById("debug");
+
+    function log(message) {
+      debug.textContent += message + "\n";
+    }
+
+    log("Loaded " + VERSION);
+
+    document.getElementById("cloneBtn").addEventListener("click", function () {
+      log("Button clicked");
+
+      const createParams = new URLSearchParams();
+      createParams.set("pid", targetProjectId);
+      createParams.set("summary", "Test cloned summary");
+      createParams.set("description", "Test cloned description");
+
+      const createUrl =
+        jiraBaseUrl +
+        "/secure/CreateIssueDetails!init.jspa?" +
+        createParams.toString();
+
+      log("Opening exact URL:");
+      log(createUrl);
+
+      window.top.location.href = createUrl;
+    });
+  </script>
+</body>
 </html>
