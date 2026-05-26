@@ -9,6 +9,7 @@
   <pre id="debug"></pre>
 
   <script>
+    const VERSION = "v6-no-issuetype";
     const jiraBaseUrl = "https://cerillion.atlassian.net";
     const targetProjectId = "10447";
 
@@ -18,23 +19,23 @@
       debug.textContent += message + "\n";
     }
 
-    log("Page loaded - URL prefill test");
+    log("Loaded " + VERSION);
 
     document.getElementById("cloneBtn").addEventListener("click", function () {
       log("Button clicked");
 
-      const createParams = new URLSearchParams({
-        pid: targetProjectId,
-        summary: "Test cloned summary",
-        description: "Test cloned description"
-      });
+      const createParams = new URLSearchParams();
+      createParams.set("pid", targetProjectId);
+      createParams.set("summary", "Test cloned summary");
+      createParams.set("description", "Test cloned description");
 
       const createUrl =
         jiraBaseUrl +
         "/secure/CreateIssueDetails!init.jspa?" +
         createParams.toString();
 
-      log("Opening: " + createUrl);
+      log("Opening exact URL:");
+      log(createUrl);
 
       window.top.location.href = createUrl;
     });
