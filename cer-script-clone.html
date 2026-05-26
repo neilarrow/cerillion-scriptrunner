@@ -1,40 +1,50 @@
 <!doctype html>
 <html>
 <head>
-  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+  <meta charset="utf-8">
 </head>
 <body>
   <button id="cloneBtn">Custom Clone</button>
+  <pre id="debug"></pre>
 
   <script>
-    const jiraBaseUrl = "https://cerillion.atlassian.net";
-    const targetProjectId = "10447";
-    const targetIssueTypeId = "10370";
+    const debug = document.getElementById("debug");
+
+    function log(message) {
+      debug.textContent += message + "\n";
+    }
+
+    log("Page loaded");
 
     document.getElementById("cloneBtn").addEventListener("click", function () {
-      AP.context.getContext(function (context) {
-        const issueKey =
-          context?.jira?.issue?.key ||
-          context?.issue_key ||
-          new URLSearchParams(window.location.search).get("issue.key");
+      log("Button clicked");
 
-        if (!issueKey) {
-          alert("Could not determine source issue key.");
-          return;
-        }
+      const paramsIn = new URLSearchParams(window.location.search);
+      const issueKey = paramsIn.get("issueKey");
 
-        const params = new URLSearchParams({
-          pid: targetProjectId,
-          issuetype: targetIssueTypeId,
-          summary: "Clone of " + issueKey,
-          description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
-        });
+      if (!issueKey || issueKey.includes("{")) {
+        log("ERROR: issueKey was not passed into the fragment URL");
+        log("Current URL: " + window.location.href);
+        return;
+      }
 
-        window.open(
-          jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + params.toString(),
-          "_blank"
-        );
+      const jiraBaseUrl = "https://cerillion.atlassian.net";
+      const targetProjectId = "10447";
+      const targetIssueTypeId = "10370";
+      
+      const paramsOut = new URLSearchParams({
+        pid: targetProjectId,
+        issuetype: targetIssueTypeId,
+        summary: "Clone of " + issueKey,
+        description: "Cloned from " + jiraBaseUrl + "/browse/" + issueKey
       });
+
+      const createUrl =
+        jiraBaseUrl + "/secure/CreateIssueDetails!init.jspa?" + paramsOut.toString();
+
+      log("Opening: " + createUrl);
+
+      window.top.location.href = createUrl;
     });
   </script>
 </body>
